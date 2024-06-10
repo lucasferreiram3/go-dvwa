@@ -4,7 +4,7 @@ on:
     branches: [veracode-actions]
 jobs:
   veracode-auto-package:
-    name: Veracode auto-package
+    name: veracode auto-package
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -16,4 +16,31 @@ jobs:
         run: |        
           curl -fsS https://tools.veracode.com/veracode-cli/install | sh
           ./veracode package --source . --output . --trust
-          ls -l
+          ls -l | grep veracode-auto-pack-go-dvwa-go.zip
+
+      - name: salvando artefato
+        uses: actions/upload-artifact@v4
+        with:
+            name: veracode_pack
+            path: ./veracode-auto-pack-go-dvwa-go.zip
+
+  veracode-sast-pipeline-scan:
+    runs-on: ubuntu-latest
+    needs: [ veracode-auto-package ]
+    name: veracode sast pipeline scan
+
+    steps:
+      - name: get archive
+        uses: actions/download-artifact@v4 
+        with:
+          name: veracode_pack
+          path: .
+
+      - name: pipeline-scan action step
+        id: pipeline-scan
+        uses: veracode/Veracode-pipeline-scan-action@v1.0.16
+        with:
+          vid: ${{ secrets.VERACODE_ID }}
+          vkey: ${{ secrets.VERACODE_KEY }}
+          file: "veracode-auto-pack-go-dvwa-go.zip"
+          fail_build: "false"
