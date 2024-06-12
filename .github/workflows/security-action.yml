@@ -44,3 +44,11 @@ jobs:
           vkey: ${{ secrets.VERACODE_KEY }}
           file: "veracode-auto-pack-go-dvwa-go.zip"
           fail_build: "false"
+
+      - name: salvando results.json
+        uses: actions/upload-artifact@v4
+        with:
+            name: results.json
+            path: |
+              results.json
+              filtered_results.json
